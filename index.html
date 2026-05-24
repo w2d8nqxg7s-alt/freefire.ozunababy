@@ -1,0 +1,363 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<title>Sistema Seguro</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Share+Tech+Mono&display=swap');
+*{margin:0;padding:0;box-sizing:border-box;}
+body{background:#000;font-family:'Share Tech Mono','Courier New',monospace;overflow:hidden;height:100vh;}
+
+/* MATRIX RAIN */
+#rain{position:fixed;top:0;left:0;z-index:0;opacity:.15;}
+
+/* PANTALLA PRINCIPAL */
+#screen{position:fixed;inset:0;z-index:2;padding:24px 36px;display:flex;flex-direction:column;}
+#header{display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid #00ff4133;padding-bottom:8px;margin-bottom:16px;}
+.htitle{color:#00ff41;font-size:11px;letter-spacing:4px;animation:glitch 5s infinite;}
+.htime{color:#00ff4177;font-size:11px;}
+@keyframes glitch{0%,85%,100%{text-shadow:none}86%{text-shadow:2px 0 #f00,-2px 0 #0ff}88%{text-shadow:-2px 0 #f00,2px 0 #0ff}90%{text-shadow:none}}
+
+#terminal{flex:1;overflow:hidden;display:flex;flex-direction:column;gap:1px;}
+.line{font-size:13px;line-height:1.85;color:#00ff41;opacity:0;transform:translateX(-6px);transition:opacity .18s,transform .18s;white-space:pre;}
+.line.show{opacity:1;transform:none;}
+.line.r{color:#ff2222;}.line.y{color:#ffd700;}.line.c{color:#00eeff;}.line.g{color:#444;}.line.w{color:#bbb;}
+
+/* PROGRESO */
+#prog-wrap{display:none;margin:3px 0;}
+#prog-lbl{color:#ffd700;font-size:12px;margin-bottom:2px;}
+#prog-out{background:#001100;border:1px solid #00ff41;height:15px;width:580px;max-width:100%;position:relative;}
+#prog-fill{height:100%;background:#00ff41;width:0%;}
+#prog-pct{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:10px;color:#00ff41;mix-blend-mode:exclusion;}
+
+/* ALARMA */
+#alarm{display:none;position:fixed;inset:0;background:#ff000022;z-index:3;pointer-events:none;animation:alm .45s infinite;}
+@keyframes alm{0%,100%{opacity:0}50%{opacity:1}}
+
+/* BITCOIN ERROR */
+#btc{display:none;border:2px solid #ff2222;padding:10px 18px;margin:6px 0;background:#110000;animation:flk 2s infinite;max-width:640px;}
+#btc .et{color:#ff2222;font-size:14px;letter-spacing:2px;margin-bottom:5px;}
+#btc .er{color:#ff8888;font-size:12px;line-height:1.9;}
+#btc .ea{color:#ffd700;font-size:11px;}
+@keyframes flk{0%,100%{opacity:1}89%{opacity:1}90%{opacity:.4}92%{opacity:1}96%{opacity:.7}97%{opacity:1}}
+
+/* ANUNCIOS SOSPECHOSOS */
+#ads{display:none;position:fixed;z-index:8;}
+
+.ad{
+  position:absolute;
+  font-family:'Share Tech Mono',monospace;
+  font-size:11px;
+  border:2px solid;
+  padding:8px 12px;
+  cursor:pointer;
+  animation:adpop .3s ease-out, adbob 2s ease-in-out infinite 0.3s;
+  max-width:220px;
+  line-height:1.6;
+}
+@keyframes adpop{from{transform:scale(0.5);opacity:0}to{transform:scale(1);opacity:1}}
+@keyframes adbob{0%,100%{transform:translateY(0)}50%{transform:translateY(-4px)}}
+
+.ad-robux{background:#1a0030;border-color:#cc00ff;color:#ff88ff;top:60px;right:30px;}
+.ad-robux .adtitle{color:#ff00ff;font-size:13px;font-weight:bold;display:block;margin-bottom:3px;}
+.ad-robux .arab{color:#ff88ff;font-size:14px;display:block;margin:3px 0;}
+
+.ad-ff{background:#001a00;border-color:#00ff00;color:#88ff88;top:220px;right:30px;}
+.ad-ff .adtitle{color:#00ff00;font-size:13px;font-weight:bold;display:block;margin-bottom:3px;}
+.ad-ff .arab{color:#aaffaa;font-size:13px;display:block;margin:3px 0;}
+
+.ad-btc2{background:#1a1000;border-color:#ffd700;color:#ffcc44;top:390px;right:30px;}
+.ad-btc2 .adtitle{color:#ffd700;font-size:13px;font-weight:bold;display:block;margin-bottom:3px;}
+
+.ad-close{float:right;cursor:pointer;color:#ff4444;font-size:14px;margin-left:6px;}
+.ad-close:hover{color:#fff;}
+
+.ad-btn{
+  display:inline-block;
+  margin-top:5px;
+  background:#ff00ff22;
+  border:1px solid currentColor;
+  padding:3px 10px;
+  font-size:10px;
+  cursor:pointer;
+  letter-spacing:1px;
+}
+.ad-ff .ad-btn{background:#00ff0022;}
+.ad-btc2 .ad-btn{background:#ffd70022;}
+
+/* POPUP ÁRABE */
+#arab-popup{
+  display:none;
+  position:fixed;
+  top:50%;left:50%;
+  transform:translate(-50%,-50%);
+  z-index:9;
+  background:#0a0010;
+  border:2px solid #aa00ff;
+  padding:20px 30px;
+  text-align:center;
+  animation:flk 1.5s infinite;
+  min-width:300px;
+}
+#arab-popup .ap-arab{color:#ff88ff;font-size:26px;direction:rtl;display:block;margin-bottom:8px;}
+#arab-popup .ap-sub{color:#cc88ff;font-size:12px;display:block;margin-bottom:12px;letter-spacing:1px;}
+#arab-popup button{background:transparent;border:1px solid #aa00ff;color:#aa00ff;font-family:inherit;font-size:12px;padding:6px 20px;cursor:pointer;letter-spacing:2px;}
+#arab-popup button:hover{background:#aa00ff22;}
+
+/* FINAL */
+#joke{display:none;position:fixed;inset:0;z-index:20;background:#000;flex-direction:column;align-items:center;justify-content:center;gap:16px;text-align:center;padding:20px;}
+#joke .emoji{font-size:52px;}
+#joke .msg{color:#00ff41;font-size:24px;letter-spacing:3px;animation:jk 1.2s ease-in-out infinite;}
+#joke .sub{color:#666;font-size:13px;letter-spacing:2px;max-width:500px;}
+#joke .arab-final{color:#ff88ff;font-size:20px;direction:rtl;margin-top:4px;}
+@keyframes jk{0%,100%{opacity:1}50%{opacity:.5}}
+#restart{margin-top:18px;background:transparent;border:1px solid #00ff41;color:#00ff41;font-family:inherit;font-size:13px;padding:10px 28px;cursor:pointer;letter-spacing:2px;}
+#restart:hover{background:#00ff4122;}
+</style>
+</head>
+<body>
+
+<canvas id="rain"></canvas>
+<div id="alarm"></div>
+
+<!-- Anuncios sospechosos -->
+<div id="ads">
+
+  <div class="ad ad-robux">
+    <span class="ad-close" onclick="this.parentElement.remove()">✕</span>
+    <span class="adtitle">🎮 ROBUX GRATIS 2024</span>
+    <span>¡100,000 ROBUX sin verificación!</span>
+    <span class="arab">روبوكس مجاني - العرض محدود</span>
+    <span style="color:#ff44ff;font-size:10px;">✅ Sin encuestas ✅ Instantáneo</span>
+    <span class="ad-btn" onclick="adClick()">▶ RECLAMAR AHORA</span>
+  </div>
+
+  <div class="ad ad-ff">
+    <span class="ad-close" onclick="this.parentElement.remove()">✕</span>
+    <span class="adtitle">🔥 FREE FIRE - DIAMANTES</span>
+    <span>99,999 💎 GRATIS hoy</span>
+    <span class="arab">الماس مجاني - فري فاير</span>
+    <span style="color:#44ff44;font-size:10px;">⚡ Solo quedan 3 lugares!</span>
+    <span class="ad-btn" onclick="adClick()">▶ OBTENER DIAMANTES</span>
+  </div>
+
+  <div class="ad ad-btc2">
+    <span class="ad-close" onclick="this.parentElement.remove()">✕</span>
+    <span class="adtitle">₿ BITCOIN DUPLICADOR™</span>
+    <span>Enviá 0.01 BTC y recibí 0.05 BTC</span>
+    <span style="color:#ff8800;font-size:10px;">⚠ Oferta expira en: <span id="cd">04:59</span></span>
+    <span style="font-size:10px;color:#997700;">Respaldado por inversores anónimos</span>
+    <span class="ad-btn" onclick="adClick()">▶ DUPLICAR AHORA</span>
+  </div>
+
+</div>
+
+<!-- Popup árabe -->
+<div id="arab-popup">
+  <span class="ap-arab">تهانينا! لقد فزت!</span>
+  <span class="ap-sub">¡FELICITACIONES — USUARIO SELECCIONADO!</span>
+  <span style="color:#ff88ff;font-size:11px;display:block;margin-bottom:10px;">Eres el visitante #1,000,000 de hoy 🎉</span>
+  <button onclick="document.getElementById('arab-popup').style.display='none'">[ CERRAR ]</button>
+</div>
+
+<!-- Pantalla principal -->
+<div id="screen">
+  <div id="header">
+    <span class="htitle">SISTEMA SEGURO v4.2.1 — ENCRIPTADO</span>
+    <span class="htime" id="clock"></span>
+  </div>
+  <div id="terminal"></div>
+  <div id="prog-wrap">
+    <div id="prog-lbl"></div>
+    <div id="prog-out"><div id="prog-fill"></div><div id="prog-pct">0%</div></div>
+  </div>
+  <div id="btc">
+    <div class="et">⚠ ERROR — TRANSACCIÓN BITCOIN INTERCEPTADA</div>
+    <div class="er">Origen wallet  : <span class="ea">1A1zP1eP5QGefi2DMPTfTL5SLmv7Divf</span></div>
+    <div class="er">Destino        : <span class="ea">bc1qxy2kgdygjrsqtzq2n0yrf2493p83kkfjhx0wlh</span> ← SOSPECHOSO</div>
+    <div class="er">Monto          : <span class="ea">3.142 BTC (~$201,440 USD)</span></div>
+    <div class="er">Estado         : <span style="color:#ff2222;animation:flk 0.8s infinite">CANJEANDO BITCOINS... ERROR ENCONTRADO</span></div>
+    <div class="er">Código         : <span style="color:#ff8800">ERR_CRYPTO_0xDEADBEEF — تحذير أمني</span></div>
+  </div>
+</div>
+
+<!-- Pantalla final broma -->
+<div id="joke">
+  <div class="emoji">😂</div>
+  <div class="msg">¡TE LA MANDÉ! ERA UNA JODA</div>
+  <div class="sub">tus bitcoins, robux y diamantes están todos a salvo... si es que tenés 💀</div>
+  <div class="arab-final">لقد خدعتك! هذه مزحة فقط 😂</div>
+  <button id="restart" onclick="location.reload()">[ REINICIAR BROMA ]</button>
+</div>
+
+<script>
+// ── Reloj ──────────────────────────────────────────────
+const clock = document.getElementById('clock');
+function tick(){const n=new Date();clock.textContent=n.toLocaleTimeString('es-AR')+'  '+n.toLocaleDateString('es-AR');}
+tick(); setInterval(tick,1000);
+
+// ── Countdown anuncio ───────────────────────────────────
+let cdSecs=299;
+setInterval(()=>{
+  if(cdSecs<=0)return;
+  cdSecs--;
+  const m=String(Math.floor(cdSecs/60)).padStart(2,'0');
+  const s=String(cdSecs%60).padStart(2,'0');
+  const el=document.getElementById('cd');
+  if(el) el.textContent=m+':'+s;
+},1000);
+
+function adClick(){
+  document.getElementById('arab-popup').style.display='block';
+}
+
+// ── Matrix rain ─────────────────────────────────────────
+const canvas=document.getElementById('rain');
+const ctx=canvas.getContext('2d');
+canvas.width=window.innerWidth; canvas.height=window.innerHeight;
+const cols=Math.floor(canvas.width/16);
+const drops=Array(cols).fill(1);
+function rain(){
+  ctx.fillStyle='rgba(0,0,0,0.05)';ctx.fillRect(0,0,canvas.width,canvas.height);
+  ctx.fillStyle='#00ff41';ctx.font='13px monospace';
+  for(let i=0;i<drops.length;i++){
+    ctx.fillText(String.fromCharCode(0x30A0+Math.random()*96),i*16,drops[i]*16);
+    if(drops[i]*16>canvas.height&&Math.random()>.975)drops[i]=0;
+    drops[i]++;
+  }
+}
+setInterval(rain,45);
+
+// ── Audio ───────────────────────────────────────────────
+let actx;
+function beep(f,d,v){
+  try{
+    if(!actx)actx=new(window.AudioContext||window.webkitAudioContext)();
+    const o=actx.createOscillator(),g=actx.createGain();
+    o.connect(g);g.connect(actx.destination);
+    o.frequency.value=f;
+    g.gain.setValueAtTime(v||.15,actx.currentTime);
+    g.gain.exponentialRampToValueAtTime(.001,actx.currentTime+d);
+    o.start();o.stop(actx.currentTime+d);
+  }catch(e){}
+}
+
+// ── Terminal ────────────────────────────────────────────
+const term=document.getElementById('terminal');
+let lc=0;
+function addLine(text,cls,delay){
+  return new Promise(res=>setTimeout(()=>{
+    const d=document.createElement('div');
+    d.className='line'+(cls?' '+cls:'');
+    d.textContent=text;
+    term.appendChild(d);
+    requestAnimationFrame(()=>d.classList.add('show'));
+    if(lc++>26&&term.firstChild)term.removeChild(term.firstChild);
+    res();
+  },delay));
+}
+
+function prog(label,dur){
+  return new Promise(res=>{
+    const w=document.getElementById('prog-wrap');
+    const f=document.getElementById('prog-fill');
+    const p=document.getElementById('prog-pct');
+    document.getElementById('prog-lbl').textContent=label;
+    w.style.display='block';f.style.width='0%';p.textContent='0%';
+    let v=0;
+    const iv=setInterval(()=>{
+      v++;f.style.width=v+'%';p.textContent=v+'%';
+      if(v%15===0)beep(300+v*2,.04,.08);
+      if(v>=100){clearInterval(iv);setTimeout(res,200);}
+    },dur/100);
+  });
+}
+
+// ── Main sequence ───────────────────────────────────────
+async function startHack(){
+  // boot
+  await addLine('> Iniciando sesión segura...','',0);
+  await addLine('> Autenticando certificado TLS 1.3...     [OK]','',500); beep(880,.08);
+  await addLine('> Verificando módulos del sistema...      [OK]','',1000); beep(880,.08);
+  await addLine('> Cargando encriptación AES-256...        [OK]','',1500); beep(880,.08);
+  await addLine('','',1900);
+
+  // intrusión
+  await addLine('─────────────────────────────────────────────────────','g',2000);
+  await addLine('   !! ALERTA DE SEGURIDAD — NIVEL ROJO CRÍTICO !!','r',2300); beep(220,.5,.3);
+  await addLine('─────────────────────────────────────────────────────','g',2500);
+  await addLine('','',2700);
+  await addLine('  Conexión entrante no autorizada:','y',2900);
+  await addLine('  IP       : 185.220.101.47  [TOR EXIT — MOSCÚ, RU]','r',3300);
+  await addLine('  Puerto   : 4444  (reverse shell)','r',3700);
+  await addLine('  Exploit  : CVE-2024-21887  (0-day kernel)','r',4100);
+  await addLine('','',4400);
+  await addLine('> Ejecutando contramedidas...','c',4600);
+  await addLine('> Firewall activo... bloqueando...         FALLIDO','r',5100); beep(180,.25,.3);
+  await addLine('> IDS activado... deteniendo...            FALLIDO','r',5600); beep(180,.25,.3);
+  await addLine('> Modo pánico...                           FALLIDO','r',6100); beep(180,.25,.3);
+  await addLine('','',6400);
+  await addLine('████  ROOT OBTENIDO — SISTEMA COMPROMETIDO  ████','r',6600); beep(110,.6,.4);
+  await addLine('','',6900);
+
+  // escaneo
+  await addLine('> Iniciando escaneo de archivos...','c',7100);
+  await prog('> Escaneando sistema de archivos...',2800);
+  await addLine('','',100);
+  await addLine('   /home/usuario/Documentos/claves_banco.txt  [CAPTURADO]','r',400); beep(440,.08);
+  await addLine('   /home/usuario/.ssh/id_rsa                  [CAPTURADO]','r',800); beep(440,.08);
+  await addLine('   /home/usuario/wallet/bitcoin.dat           [CAPTURADO]','r',1200); beep(440,.08);
+  await addLine('   /home/usuario/roblox/cuenta_premium.txt    [CAPTURADO]','r',1600); beep(440,.08);
+  await addLine('   Historial de navegación (12,450 entradas)  [CAPTURADO]','',2000);
+  await addLine('   Contactos y fotos personales               [CAPTURADO]','',2400);
+  await addLine('','',2700);
+
+  // bitcoin error
+  await addLine('> Detectando wallets de criptomonedas...','y',2900); beep(330,.2);
+  await addLine('> Wallet encontrada. Iniciando canje de Bitcoin...','y',3600);
+  await addLine('','',3900);
+
+  document.getElementById('btc').style.display='block';
+  document.getElementById('alarm').style.display='block';
+  beep(100,.9,.5);
+  setTimeout(()=>document.getElementById('alarm').style.display='none',4500);
+
+  // anuncios (aparecen mientras el caos ocurre)
+  setTimeout(()=>document.getElementById('ads').style.display='block', 2000);
+
+  await addLine('','',600);
+  await addLine('> Re-intentando... [1/3]','y',1200); beep(200,.15);
+  await addLine('> Re-intentando... [2/3]','y',2200); beep(200,.15);
+  await addLine('> Re-intentando... [3/3]  *** FALLIDO ***','r',3200); beep(120,.4);
+  await addLine('','',3500);
+
+  // exfiltración
+  await addLine('> Cambiando a exfiltración directa de datos...','c',3700);
+  await prog('> Transfiriendo 4.7 GB a servidor externo...',6500);
+
+  await addLine('','',100);
+  await addLine('  Upload completado → 185.220.101.47:8443','r',400); beep(880,.15);
+  await addLine('> Instalando backdoor persistente...       [OK]','r',900);
+  await addLine('> Borrando logs y rastros...               [OK]','r',1400);
+  await addLine('> Desconectando sesión...','',1900);
+  await addLine('','',2300);
+  await addLine('  Sistema comprometido. Conexión cerrada.','r',2500);
+  beep(55,2,.5);
+
+  // popup árabe aparece
+  setTimeout(()=>document.getElementById('arab-popup').style.display='block', 1500);
+
+  // reveal
+  setTimeout(()=>{
+    document.getElementById('screen').style.display='none';
+    document.getElementById('ads').style.display='none';
+    document.getElementById('arab-popup').style.display='none';
+    const j=document.getElementById('joke');
+    j.style.display='flex';
+  }, 5500);
+}
+
+startHack();
+</script>
+</body>
+</html>
